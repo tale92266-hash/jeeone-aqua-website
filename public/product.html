@@ -136,6 +136,23 @@ async function init() {
         <span style="font-weight:600">${s.value}${s.unit ? ' ' + s.unit : ''}</span>
       </div>`).join('')}
     </div>` : ''}
+    ${(P.richContent && P.richContent.length) ? `<div style="margin-top:16px">` + P.richContent.map(b => {
+      if(b.type==='banner' && b.image) return `<img src="${b.image}" style="width:100%;border-radius:12px;margin-bottom:12px" loading="lazy">`;
+      if(b.type==='text_image') return `<div style="margin-bottom:16px"><img src="${b.image}" style="width:100%;border-radius:12px;margin-bottom:8px" loading="lazy">${b.title?`<div style="font-size:15px;font-weight:700;margin-bottom:4px">${b.title}</div>`:''}${b.text?`<p style="font-size:13px;color:var(--muted);line-height:1.6">${b.text}</p>`:''}</div>`;
+      if(b.type==='features') {
+        const items = (b.items||'').split('\n').map(s=>s.trim()).filter(Boolean);
+        return `<div style="margin-bottom:16px">${b.title?`<div style="font-size:15px;font-weight:700;margin-bottom:10px">${b.title}</div>`:''}
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+        ${items.map(it=>`<div style="background:#f0f7f1;border-radius:10px;padding:12px;text-align:center">
+          <div style="width:36px;height:36px;margin:0 auto 6px;background:var(--green);border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:18px">✓</div>
+          <div style="font-size:12px;font-weight:600">${it}</div></div>`).join('')}
+        </div></div>`;
+      }
+      if(b.type==='highlight') return `<div style="background:${b.color||'#1E5A3C'};color:#fff;border-radius:12px;padding:18px;margin-bottom:16px;text-align:center">
+        ${b.title?`<div style="font-size:16px;font-weight:700;margin-bottom:6px">${b.title}</div>`:''}
+        ${b.text?`<p style="font-size:13px;opacity:.9;line-height:1.6">${b.text}</p>`:''}</div>`;
+      return '';
+    }).join('') + `</div>` : ''}
     ${P.weight ? `<p style="font-size:12px;color:var(--muted);margin-top:6px">Weight: ${P.weight}</p>` : ''}
     <p style="margin-top:10px;color:var(--green);font-weight:700;font-size:13px">● In stock — ships today</p>
     ${P.warranty ? `<p style="font-size:12px;color:var(--muted);margin-top:4px">Warranty: ${P.warranty}</p>` : ''}`;
