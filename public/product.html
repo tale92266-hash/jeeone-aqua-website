@@ -73,11 +73,15 @@
 <script src="/js/app.js"></script>
 <script>
 let P, gi = 0;
+function getImgs() {
+  const imgs = (P.images && P.images.length ? P.images : [P.img]).filter(Boolean);
+  return imgs.length ? imgs : ['/images/placeholder.png'];
+}
 function gallery() {
-  const imgs = [P.img, P.img, P.img];
-  document.getElementById('pimg').src = imgs[gi];
+  const imgs = getImgs();
+  document.getElementById('pimg').src = imgs[gi % imgs.length];
   document.getElementById('dots').innerHTML = imgs.map((_, i) =>
-    `<span class="${i === gi ? 'on' : ''}"></span>`).join('');
+    `<span class="${i === gi % imgs.length ? 'on' : ''}" onclick="gi=${i};gallery()"></span>`).join('');
 }
 function trackView(id) {
   try {
@@ -91,15 +95,33 @@ async function init() {
   const id = new URLSearchParams(location.search).get('id'); trackView(id);
   P = PRODUCTS.find(x => x.id === id) || PRODUCTS[0];
   gallery();
-  setInterval(() => { gi = (gi + 1) % 3; gallery(); }, 4000);
+  const imgCount = getImgs().length;
+  if (imgCount > 1) setInterval(() => { gi = (gi + 1) % imgCount; gallery(); }, 4000);
+  const disc = P.mrp > P.price ? Math.round((1 - P.price / P.mrp) * 100) : 0;
+  const tags = (P.tags || []).map(t => `<span style="display:inline-block;background:#f0f4f0;color:var(--green);font-size:11px;font-weight:600;padding:3px 10px;border-radius:12px;margin:2px">${t}</span>`).join('');
   document.getElementById('pinfo').innerHTML = `
     <div style="font-size:18px;font-weight:700">${P.name}</div>
-    <span class="p-size" style="margin:8px 0;display:inline-block">${P.size}</span>
-    <div class="p-rating"><span class="star">★</span> ${P.rating} (${P.ratingCount} ratings)</div>
+    ${P.sku ? `<div style="font-size:11px;color:var(--muted);margin-top:2px">SKU: ${P.sku}</div>` : ''}
+    <div class="p-rating" style="margin-top:6px"><span class="star">★</span> ${P.rating || 'New'} ${P.ratingCount ? `(${P.ratingCount} ratings)` : ''}</div>
     <div class="p-price" style="margin:10px 0"><span class="now" style="font-size:24px">₹${P.price}</span>
-      <span class="was">₹${P.mrp}</span><span class="off">${discount(P)}% off</span></div>
-    <p style="font-size:13px;color:var(--muted)">${P.desc}</p>
-    <p style="margin-top:10px;color:var(--green);font-weight:700;font-size:13px">● In stock — ships today</p>`;
+      ${P.mrp > P.price ? `<span class="was">₹${P.mrp}</span><span class="off">${disc}% off</span>` : ''}</div>
+    <p style="font-size:13px;color:var(--muted)">${P.desc || ''}</p>
+    ${tags ? `<div style="margin-top:8px">${tags}</div>` : ''}
+    ${P.weight ? `<p style="font-size:12px;color:var(--muted);margin-top:6px">Weight: ${P.weight}</p>` : ''}
+    <p style="margin-top:10px;color:var(--green);font-weight:700;font-size:13px">● In stock — ships today</p>
+    ${P.warranty ? `<p style="font-size:12px;color:var(--muted);margin-top:4px">Warranty: ${P.warranty}</p>` : ''}`;
+  // Policies section
+  const pol = [];
+  if (P.shippingInfo) pol.push(['Shipping', P.shippingInfo]);
+  if (P.returnPolicy) pol.push(['Return Policy', P.returnPolicy]);
+  if (P.refundPolicy) pol.push(['Refund Policy', P.refundPolicy]);
+  if (pol.length) {
+    const polHtml = document.createElement('div');
+    polHtml.className = 'panel';
+    polHtml.innerHTML = '<h2>Product Policies</h2>' + pol.map(([t, d]) =>
+      `<div style="margin-bottom:12px"><div style="font-weight:700;font-size:13px;margin-bottom:4px">${t}</div><p style="font-size:13px;color:var(--muted)">${d}</p></div>`).join('');
+    document.querySelector('.panel').after(polHtml);
+  }
   renderBar();
   drawRStars();
   loadReviews();
@@ -125,10 +147,10 @@ function openFS() {
 }
 function closeFS() { document.getElementById('fsv').classList.remove('on'); }
 function drawFS() {
-  const imgs = [P.img, P.img, P.img];
-  document.getElementById('fsimg').src = imgs[fsIx];
+  const imgs = getImgs();
+  document.getElementById('fsimg').src = imgs[fsIx % imgs.length];
   document.getElementById('fsdots').innerHTML = imgs.map((_, i) =>
-    `<span class="${i === fsIx ? 'on' : ''}"></span>`).join('');
+    `<span class="${i === fsIx % imgs.length ? 'on' : ''}"></span>`).join('');
 }
 // swipe support
 let tx0 = 0;
@@ -137,7 +159,8 @@ document.addEventListener('DOMContentLoaded', () => {
   fsv.addEventListener('touchstart', e => tx0 = e.touches[0].clientX, {passive:true});
   fsv.addEventListener('touchend', e => {
     const dx = e.changedTouches[0].clientX - tx0;
-    if (Math.abs(dx) > 50) { fsIx = (fsIx + (dx < 0 ? 1 : 2)) % 3; drawFS(); }
+    const n = getImgs().length;
+    if (Math.abs(dx) > 50) { fsIx = (fsIx + (dx < 0 ? 1 : n - 1)) % n; drawFS(); }
   }, {passive:true});
   document.addEventListener('keydown', e => { if (e.key === 'Escape') closeFS(); });
 });
