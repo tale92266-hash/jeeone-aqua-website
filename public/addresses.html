@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>My Addresses — JeeOne Aqua</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/style.css">
+<style>
+.addr-card { background:#fff; margin:12px; border-radius:14px; padding:16px; box-shadow:0 1px 6px rgba(28,43,35,.08); position:relative; }
+.addr-card.sel { border:2px solid var(--green); }
+.addr-card .tag { display:inline-block; font-size:10px; font-weight:800; background:var(--gold-pale); color:#8A6D1B;
+  padding:3px 10px; border-radius:10px; margin-bottom:6px; text-transform:uppercase; }
+.addr-card .nm { font-weight:700; font-size:15px; }
+.addr-card .ad { font-size:13px; color:var(--muted); margin-top:4px; }
+.addr-card .row { display:flex; gap:8px; margin-top:12px; }
+.addr-card .row button { flex:1; padding:9px; border-radius:8px; font-size:13px; font-weight:700; cursor:pointer; }
+.btn-sel { background:var(--green); color:#fff; border:none; }
+.btn-del { background:#fff; color:#C62828; border:1.5px solid #E8B4B4; }
+</style>
+</head>
+<body>
+<script src="/js/icons.js"></script>
+<div class="app-header">
+  <div class="header-row" style="margin-bottom:0">
+    <a class="icon-btn" href="javascript:history.back()"><script>document.write(ic("back",22))</script></a>
+    <span class="name" style="font-size:16px">My Addresses</span>
+  </div>
+</div>
+<div id="list"></div>
+<div class="panel"><h2>Add New Address</h2>
+  <label>Label</label>
+  <div class="slot-grid" style="grid-template-columns:repeat(3,1fr)" id="tags">
+    <div class="slot active" data-tag="Home">Home</div>
+    <div class="slot" data-tag="Office">Office</div>
+    <div class="slot" data-tag="Other">Other</div>
+  </div>
+  <label>Full Name</label><input id="aName" placeholder="Receiver's name">
+  <label>Phone</label><input id="aPhone" placeholder="10-digit mobile" maxlength="10" inputmode="numeric">
+  <label>Address</label><textarea id="aAddr" rows="3" placeholder="House no, street, landmark, pincode"></textarea>
+  <button class="btn btn-green" style="margin-bottom:10px" onclick="useLocation()"><script>document.write(ic("location",18))</script> Use My Current Location</button>
+  <button class="btn btn-green" onclick="addAddr()">Save Address</button>
+</div>
+<script src="/js/app.js"></script>
+<script>
+let addrs = [];
+try { addrs = JSON.parse(localStorage.getItem('jea_addrs') || '[]'); } catch(e) {}
+let tag = 'Home', selIx = parseInt(localStorage.getItem('jea_addr_sel') || '0');
+
+function save() { localStorage.setItem('jea_addrs', JSON.stringify(addrs)); localStorage.setItem('jea_addr_sel', selIx); }
+
+function render() {
+  document.getElementById('list').innerHTML = addrs.length ? addrs.map((a, i) => `
+    <div class="addr-card ${i === selIx ? 'sel' : ''}">
+      <span class="tag">${a.tag}</span>
+      <div class="nm">${a.name} • ${a.phone}</div>
+      <div class="ad">${a.addr}</div>
+      <div class="row">
+        ${i === selIx ? '' : `<button class="btn-sel" onclick="selIx=${i};save();render()">Select</button>`}
+        <button class="btn-del" onclick="addrs.splice(${i},1);if(selIx>=addrs.length)selIx=0;save();render()">Delete</button>
+      </div>
+    </div>`).join('')
+    : `<div class="empty"><div class="big">${ic("location",48)}</div><p>No saved addresses.</p></div>`;
+  document.querySelectorAll('#tags .slot').forEach(el => el.onclick = () => {
+    tag = el.dataset.tag;
+    document.querySelectorAll('#tags .slot').forEach(x => x.classList.remove('active'));
+    el.classList.add('active');
+  });
+}
+function useLocation() {
+  if (!navigator.geolocation) return alert('Location not supported on this device');
+  const btn = event.target; btn.innerHTML = 'Fetching location…'; btn.disabled = true;
+  navigator.geolocation.getCurrentPosition(async pos => {
+    try {
+      const r = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${pos.coords.latitude}&lon=${pos.coords.longitude}`);
+      const d = await r.json();
+      document.getElementById('aAddr').value = d.display_name || '';
+    } catch(e) {
+      document.getElementById('aAddr').value = pos.coords.latitude.toFixed(6) + ', ' + pos.coords.longitude.toFixed(6);
+    }
+    btn.innerHTML = ic('location',18) + ' Use My Current Location'; btn.disabled = false;
+  }, err => {
+    alert('Could not get location: ' + err.message);
+    btn.innerHTML = ic('location',18) + ' Use My Current Location'; btn.disabled = false;
+  }, { timeout: 15000 });
+}
+function addAddr() {
+  const name = document.getElementById('aName').value.trim();
+  const phone = document.getElementById('aPhone').value.trim();
+  const addr = document.getElementById('aAddr').value.trim();
+  if (!name) return alert('Enter name');
+  if (!/^\d{10}$/.test(phone)) return alert('Enter valid 10-digit phone');
+  if (!addr) return alert('Enter address');
+  addrs.push({ tag, name, phone, addr });
+  document.getElementById('aName').value = ''; document.getElementById('aPhone').value = ''; document.getElementById('aAddr').value = '';
+  save(); render();
+}
+render();
+</script>
+</body>
+</html>

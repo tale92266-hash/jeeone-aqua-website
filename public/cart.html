@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Cart — JeeOne Aqua</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<script src="/js/icons.js"></script>
+<div class="app-header">
+  <div class="header-row" style="margin-bottom:0">
+    <a class="icon-btn" href="/"><script>document.write(ic("back",22))</script></a>
+    <span class="name" style="font-size:16px">My Cart</span>
+  </div>
+</div>
+<div class="panel"><div id="rows"></div><div id="bill"></div></div>
+<div style="padding:0 12px" id="cta"></div>
+<script src="/js/app.js"></script>
+<script>
+async function render() {
+  await loadProducts();
+  const rows = document.getElementById('rows');
+  const ids = Object.keys(cart);
+  if (!ids.length) {
+    rows.innerHTML = `<div class="empty"><div class="big">${ic("cart",48)}</div><p>Your cart is empty.</p><br><a class="btn btn-green" href="/">Shop Products</a></div>`;
+    document.getElementById('bill').innerHTML = ''; document.getElementById('cta').innerHTML = ''; return;
+  }
+  rows.innerHTML = ids.map(id => {
+    const p = PRODUCTS.find(x => x.id === id); if (!p) return '';
+    const q = cart[id];
+    return `<div class="cart-row">
+      <img src="${p.img}" alt="">
+      <div class="info"><h4>${p.name}</h4><div class="sz">${p.size}</div>
+      <div style="font-weight:800;margin-top:4px">₹${p.price * q}</div></div>
+      <div class="qty"><button onclick="setQty('${id}',${q-1});render()">−</button><span>${q}</span><button onclick="setQty('${id}',${q+1});render()">+</button></div>
+    </div>`;
+  }).join('');
+  const sub = cartTotal(), del = sub >= 199 || sub === 0 ? 0 : 20;
+  document.getElementById('bill').innerHTML = `
+    <div style="margin-top:10px">
+      <div class="bill-row"><span>Subtotal</span><span>₹${sub}</span></div>
+      <div class="bill-row"><span>Delivery</span><span class="${del === 0 ? 'free' : ''}">${del === 0 ? 'FREE' : '₹' + del}</span></div>
+      <div class="bill-row total"><span>To Pay</span><span>₹${sub + del}</span></div>
+    </div>`;
+  document.getElementById('cta').innerHTML = `<a class="btn btn-gold" href="/checkout.html">Proceed to Checkout →</a>`;
+}
+render();
+</script>
+</body>
+</html>

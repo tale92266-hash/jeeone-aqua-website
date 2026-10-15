@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Coupons — JeeOne Aqua</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/style.css">
+<style>
+.coupon { background:#fff; margin:12px; border-radius:14px; padding:16px; display:flex; gap:14px; align-items:center;
+  box-shadow:0 1px 6px rgba(28,43,35,.08); border:1.5px dashed var(--gold); }
+.coupon .code { background:var(--gold-pale); color:#8A6D1B; font-weight:800; padding:8px 14px; border-radius:8px; font-size:15px; letter-spacing:.05em; }
+.coupon .inf { flex:1; } .coupon .inf b { font-size:14px; } .coupon .inf p { font-size:12px; color:var(--muted); }
+.coupon button { background:var(--green); color:#fff; border:none; border-radius:8px; padding:9px 16px; font-weight:700; cursor:pointer; }
+</style>
+</head>
+<body>
+<script src="/js/icons.js"></script>
+<div class="app-header">
+  <div class="header-row" style="margin-bottom:0">
+    <a class="icon-btn" href="javascript:history.back()"><script>document.write(ic("back",22))</script></a>
+    <span class="name" style="font-size:16px">Coupons</span>
+  </div>
+</div>
+<div id="list"></div>
+<script>
+async function init() {
+  const r = await fetch('/api/coupons');
+  const coupons = await r.json();
+  document.getElementById('list').innerHTML = coupons.map(c => `
+    <div class="coupon">
+      <div><div class="code">${c.code}</div></div>
+      <div class="inf"><b>${c.title}</b><p>${c.desc}</p></div>
+      <button onclick="navigator.clipboard&&navigator.clipboard.writeText('${c.code}');this.textContent='Copied!'">Copy</button>
+    </div>`).join('');
+}
+init();
+</script>
+</body>
+</html>
