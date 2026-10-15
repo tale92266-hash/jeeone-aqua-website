@@ -49,26 +49,27 @@
 <div class="panel">
   <div id="pinfo"></div>
 </div>
-<div class="panel" style="margin-bottom:12px">
-  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;text-align:center">
-    <div style="padding:12px 4px">
-      <div style="width:40px;height:40px;margin:0 auto 6px;background:#f0f4f0;border-radius:50%;display:flex;align-items:center;justify-content:center"><script>document.write(ic("refresh",20))</script></div>
-      <div style="font-size:11px;font-weight:700" id="tbReturn">7-Day Return</div>
-    </div>
-    <div style="padding:12px 4px">
-      <div style="width:40px;height:40px;margin:0 auto 6px;background:#f0f4f0;border-radius:50%;display:flex;align-items:center;justify-content:center"><script>document.write(ic("cash",20))</script></div>
-      <div style="font-size:11px;font-weight:700">COD Available</div>
-    </div>
-    <div style="padding:12px 4px">
-      <div style="width:40px;height:40px;margin:0 auto 6px;background:#f0f4f0;border-radius:50%;display:flex;align-items:center;justify-content:center"><script>document.write(ic("truck",20))</script></div>
-      <div style="font-size:11px;font-weight:700">Fast Delivery</div>
-    </div>
-    <div style="padding:12px 4px">
-      <div style="width:40px;height:40px;margin:0 auto 6px;background:#f0f4f0;border-radius:50%;display:flex;align-items:center;justify-content:center"><script>document.write(ic("shield",20))</script></div>
-      <div style="font-size:11px;font-weight:700">100% Genuine</div>
-    </div>
-  </div>
+<div class="panel" style="margin-bottom:12px" id="trustBadges">
+  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;text-align:center" id="trustGrid"></div>
 </div>
+<script>
+function renderBadges(){
+  const b = P.badges || {return:true, cod:true, delivery:true, genuine:true};
+  const items = [];
+  if(b.return!==false) items.push(['refresh','7-Day Return']);
+  if(b.cod!==false) items.push(['cash','COD Available']);
+  if(b.delivery!==false) items.push(['truck','Fast Delivery']);
+  if(b.genuine!==false) items.push(['shield','100% Genuine']);
+  const grid = document.getElementById('trustGrid');
+  if(!items.length){ document.getElementById('trustBadges').style.display='none'; return; }
+  grid.style.gridTemplateColumns = `repeat(${items.length},1fr)`;
+  grid.innerHTML = items.map(([icon,label])=>`
+    <div style="padding:12px 4px">
+      <div style="width:44px;height:44px;margin:0 auto 6px;background:#f0f4f0;border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--green)">${ic(icon,22)}</div>
+      <div style="font-size:11px;font-weight:700">${label}</div>
+    </div>`).join('');
+}
+</script>
 <div class="panel">
   <h2>Delivery</h2>
   <div style="display:flex;gap:10px"><input id="pin" placeholder="Enter pincode" maxlength="6" inputmode="numeric" style="margin:0">
@@ -114,6 +115,7 @@ async function init() {
   await loadProducts();
   const id = new URLSearchParams(location.search).get('id'); trackView(id);
   P = PRODUCTS.find(x => x.id === id) || PRODUCTS[0];
+  renderBadges();
   gallery();
   const imgCount = getImgs().length;
   if (imgCount > 1) setInterval(() => { gi = (gi + 1) % imgCount; gallery(); }, 4000);
