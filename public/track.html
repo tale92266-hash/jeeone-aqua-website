@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Track Order — JeeOne Aqua</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/style.css">
+<style>
+/* Header card like app */
+.hcard { background:#fff; border-radius:16px; margin:16px 12px 0; padding:16px;
+  box-shadow:0 1px 6px rgba(28,43,35,.1); display:flex; align-items:center; }
+.hcard .oid { font-size:18px; font-weight:800; }
+.hcard .odate { font-size:13px; color:var(--muted); margin-top:4px; }
+.cancel-note { margin:12px; background:#FDE8E8; border-radius:12px; padding:12px;
+  text-align:center; color:#C62828; font-weight:700; font-size:14px; display:none; }
+
+/* Timeline like app */
+.tl-sec { font-size:15px; font-weight:800; color:var(--green-dark); margin:20px 16px 4px; }
+.tl-item { display:flex; }
+.tl-left { width:44px; display:flex; flex-direction:column; align-items:center; flex-shrink:0; }
+.tl-dot { width:36px; height:36px; border-radius:50%; margin-top:8px; display:flex;
+  align-items:center; justify-content:center; z-index:1; }
+.tl-dot.done { background:transparent; color:#2E7D32; }
+.tl-dot.now { background:var(--green); animation:pulse 1.2s infinite; }
+.tl-dot.next { background:transparent; color:#D5DCD5; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.35} }
+.tl-line { width:3px; flex:1; background:var(--line); margin:4px 0; min-height:24px; }
+.tl-line.done { background:#2E7D32; }
+.tl-body { padding:10px 0 16px; }
+.tl-title { font-size:16px; font-weight:800; display:flex; align-items:center; gap:8px; }
+.tl-title.done { color:#2E7D32; }
+.tl-live { font-size:10px; font-weight:800; background:var(--green); color:#fff;
+  padding:3px 8px; border-radius:6px; letter-spacing:.05em; }
+.tl-time { font-size:12px; color:var(--muted); margin-top:2px; }
+
+/* Partner card like app */
+.pcard2 { background:#fff; border-radius:16px; margin:20px 12px 0; padding:16px;
+  box-shadow:0 1px 6px rgba(28,43,35,.1); display:flex; align-items:center; gap:12px; }
+.pcard2 .pic { width:44px; height:44px; color:var(--green); flex-shrink:0; display:flex; align-items:center; }
+.pcard2 .pt { flex:1; }
+.pcard2 .pt .l1 { font-size:12px; color:var(--muted); }
+.pcard2 .pt .l2 { font-size:16px; font-weight:800; }
+.pcard2 .pt .l3 { font-size:12px; color:var(--muted); }
+.callbtn { width:48px; height:48px; border-radius:50%; background:var(--green); border:none;
+  color:#fff; display:flex; align-items:center; justify-content:center; cursor:pointer; flex-shrink:0; }
+
+/* Buttons like app */
+.abtn2 { display:flex; align-items:center; gap:12px; width:calc(100% - 24px); margin:16px 12px 0;
+  padding:16px; background:#fff; border:1.5px solid var(--green); border-radius:12px;
+  font-size:15px; font-weight:700; color:var(--green-dark); cursor:pointer; }
+.abtn2 .ai { color:var(--green); display:flex; }
+.abtn2.solid { background:var(--green); color:#fff; }
+.abtn2.solid .ai { color:#fff; }
+</style>
+</head>
+<body>
+<script src="/js/icons.js"></script>
+<div class="app-header">
+  <div class="header-row" style="margin-bottom:0">
+    <a class="icon-btn" href="javascript:history.back()"><script>document.write(ic("back",22))</script></a>
+    <span class="name" style="font-size:16px">Track Order</span>
+  </div>
+</div>
+<div id="content"></div>
+<div style="height:24px"></div>
+<script>
+const STEPS = ['Order Placed', 'Packed', 'Shipped', 'Out for Delivery', 'Delivered'];
+const STEP_IX = { 'Confirmed': 1, 'Placed': 0, 'Packed': 1, 'Shipped': 2, 'Out for Delivery': 3, 'Delivered': 4, 'Cancelled': -1 };
+
+async function init() {
+  const id = new URLSearchParams(location.search).get('id');
+  const r = await fetch('/api/orders');
+  const o = (await r.json()).find(x => x.id === id);
+  if (!o) { document.getElementById('content').innerHTML = '<div class="empty"><p>Order not found.</p></div>'; return; }
+
+  const six = STEP_IX[o.status] ?? 1;
+  const cancelled = o.status === 'Cancelled';
+  const placed = new Date(o.placedAt);
+
+  document.getElementById('content').innerHTML = `
+    <div class="hcard">
+      <div style="flex:1"><div class="oid">${o.id}</div>
+      <div class="odate">Placed on ${placed.toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'})}</div></div>
+      <span class="pill ${o.status}">${o.status}</span>
+    </div>
+    <div class="cancel-note" id="cnote" ${cancelled ? 'style="display:block"' : ''}>This order has been cancelled</div>
+
+    <div class="tl-sec">Timeline</div>
+    <div style="padding:0 16px">
+      ${cancelled ? '<p style="color:var(--muted);font-size:14px">No tracking available for cancelled orders.</p>' :
+      STEPS.map((s, i) => {
+        const st = i < six ? 'done' : (i === six ? 'now' : 'next');
+        const tm = i <= six ? placed.toLocaleDateString('en-IN',{day:'numeric',month:'short'}) + ', ' +
+          placed.toLocaleTimeString('en-IN',{hour:'numeric',minute:'2-digit'}) : '';
+        return `<div class="tl-item">
+          <div class="tl-left">
+            <div class="tl-dot ${st}">${st === 'done' ? ic("check",36) : (st === 'now' ? '' : ic("drop",36))}</div>
+            ${i < STEPS.length - 1 ? `<div class="tl-line ${i < six ? 'done' : ''}"></div>` : ''}
+          </div>
+          <div class="tl-body">
+            <div class="tl-title ${st === 'done' ? 'done' : ''}">${s} ${st === 'now' ? '<span class="tl-live">LIVE</span>' : ''}</div>
+            ${tm ? `<div class="tl-time">${tm}</div>` : ''}
+          </div>
+        </div>`;
+      }).join('')}
+    </div>
+
+    ${cancelled ? '' : `
+    <div class="pcard2">
+      <div class="pic">${ic("truck",40)}</div>
+      <div class="pt">
+        <div class="l1">Delivery Partner</div>
+        <div class="l2">Ravi Kumar</div>
+        <div class="l3">Delivery Van • DL 8C A1234</div>
+      </div>
+      <button class="callbtn" onclick="alert('Calling delivery partner…')">${ic("call",22)}</button>
+    </div>
+
+    ${o.status === 'Shipped' || o.status === 'Out for Delivery' ? `
+    <button class="abtn2 solid" onclick="openLive()"><span class="ai">${ic("location",22)}</span> Live Tracking</button>
+    <div id="livemap"></div>` : ''}
+
+    <button class="abtn2" onclick="alert('Our support team will call you back shortly')"><span class="ai">${ic("help",22)}</span> Support</button>
+    `}
+  `;
+}
+
+function openLive() {
+  const el = document.getElementById('livemap');
+  if (el.innerHTML) { el.innerHTML = ''; return; }
+  el.innerHTML = `
+    <div style="background:linear-gradient(135deg,#0E1A14,#1E5A3C);border-radius:16px;margin:12px;padding:20px 16px;color:#fff">
+      <div style="font-weight:700">Live Delivery</div>
+      <div style="font-size:12px;opacity:.75;margin-bottom:8px">Demo map — rider position is simulated</div>
+      <div style="position:relative;height:90px;margin:16px 6px 0">
+        <div style="position:absolute;top:50%;left:0;right:0;height:4px;background:rgba(255,255,255,.25);border-radius:2px"></div>
+        <div style="position:absolute;top:50%;left:0;width:65%;height:4px;background:var(--gold);border-radius:2px"></div>
+        <div style="position:absolute;top:50%;left:0%;transform:translate(-50%,-58%);text-align:center"><div style="width:32px;height:32px;border-radius:50%;background:#fff;color:var(--green);display:flex;align-items:center;justify-content:center;margin:0 auto">${ic("home",16)}</div><div style="font-size:10px">Store</div></div>
+        <div style="position:absolute;top:50%;left:65%;transform:translate(-50%,-58%);text-align:center"><div style="width:32px;height:32px;border-radius:50%;background:var(--gold);color:var(--green-dark);display:flex;align-items:center;justify-content:center;margin:0 auto">${ic("truck",16)}</div><div style="font-size:10px">Rider</div></div>
+        <div style="position:absolute;top:50%;left:100%;transform:translate(-50%,-58%);text-align:center"><div style="width:32px;height:32px;border-radius:50%;background:var(--green);border:2px solid var(--gold);display:flex;align-items:center;justify-content:center;margin:0 auto">${ic("location",16)}</div><div style="font-size:10px">You</div></div>
+      </div>
+      <div style="text-align:center;margin-top:10px">Arriving in <b style="color:var(--gold);font-size:20px">~20 min</b></div>
+    </div>`;
+}
+init();
+</script>
+</body>
+</html>

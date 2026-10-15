@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>My Orders — JeeOne Aqua</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/style.css">
+<style>
+/* Tabs like app */
+.tabs { display:flex; background:#fff; position:sticky; top:0; z-index:30; border-bottom:1px solid var(--line); }
+.tab { flex:1; text-align:center; padding:14px 4px 12px; font-size:13px; font-weight:700; color:var(--muted);
+  cursor:pointer; border-bottom:2.5px solid transparent; }
+.tab.on { color:var(--green); border-bottom-color:var(--green); }
+
+/* Order card like app */
+.ocard { background:#fff; margin:12px; border-radius:16px; padding:16px; box-shadow:0 1px 6px rgba(28,43,35,.1); }
+.ocard .top { display:flex; align-items:flex-start; }
+.ocard .oid { font-size:16px; font-weight:800; }
+.ocard .odate { font-size:13px; color:var(--muted); margin-top:2px; }
+.pill { font-size:12px; font-weight:700; color:#fff; padding:5px 12px; border-radius:20px; margin-left:auto; flex-shrink:0; }
+.pill.Confirmed { background:#2E7D6F; } .pill.Packed { background:#5C8A6A; }
+.pill.Shipped { background:#C9A227; } .pill.Delivered { background:#2E7D32; }
+.pill.Cancelled { background:#C62828; }
+.ocard .mid { display:flex; align-items:center; margin-top:12px; }
+.ocard .icount { font-size:14px; color:var(--muted); }
+.ocard .ototal { font-size:18px; font-weight:800; margin-left:auto; }
+.ocard .div { height:1px; background:var(--line); margin:12px 0 8px; }
+.ocard .btns { display:flex; gap:8px; }
+.ocard .btns button { flex:1; padding:10px 4px; border-radius:8px; font-size:13px; font-weight:700;
+  cursor:pointer; background:#fff; border:1.5px solid var(--green); color:var(--green-dark);
+  white-space:nowrap; overflow:hidden; }
+.ocard .btns button:active { background:var(--green-tint); }
+.ocard .btns button.primary { background:var(--green); color:#fff; border-color:var(--green); }
+</style>
+</head>
+<body>
+<script src="/js/icons.js"></script>
+<div class="app-header">
+  <div class="header-row" style="margin-bottom:0">
+    <a class="icon-btn" href="javascript:history.back()"><script>document.write(ic("back",22))</script></a>
+    <span class="name" style="font-size:16px">My Orders</span>
+  </div>
+</div>
+<div class="tabs">
+  <div class="tab on" onclick="setTab('all',this)">All</div>
+  <div class="tab" onclick="setTab('active',this)">Active</div>
+  <div class="tab" onclick="setTab('delivered',this)">Delivered</div>
+  <div class="tab" onclick="setTab('cancelled',this)">Cancelled</div>
+</div>
+<div id="list" style="padding-bottom:20px"></div>
+<script src="/js/app.js"></script>
+<script>
+let orders = [], tab = 'all';
+const ACTIVE = ['Confirmed', 'Packed', 'Shippped', 'Shipped', 'Out for Delivery'];
+
+async function init() {
+  await loadProducts();
+  const r = await fetch('/api/orders');
+  orders = await r.json();
+  render();
+}
+function setTab(t, el) {
+  tab = t;
+  document.querySelectorAll('.tab').forEach(x => x.classList.remove('on'));
+  el.classList.add('on');
+  render();
+}
+function filtered() {
+  if (tab === 'all') return orders;
+  if (tab === 'active') return orders.filter(o => o.status !== 'Delivered' && o.status !== 'Cancelled');
+  if (tab === 'delivered') return orders.filter(o => o.status === 'Delivered');
+  return orders.filter(o => o.status === 'Cancelled');
+}
+function render() {
+  const list = filtered();
+  document.getElementById('list').innerHTML = list.length ? list.map(o => {
+    const n = o.items.reduce((s, i) => s + i.qty, 0);
+    const canTrack = o.status !== 'Delivered' && o.status !== 'Cancelled';
+    return `<div class="ocard">
+      <div class="top">
+        <div><div class="oid">${o.id}</div><div class="odate">${new Date(o.placedAt).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'})}</div></div>
+        <span class="pill ${o.status}">${o.status}</span>
+      </div>
+      <div class="mid">
+        <span class="icount">${n} item${n > 1 ? 's' : ''}</span>
+        <span class="ototal">₹${o.total}</span>
+      </div>
+      <div class="div"></div>
+      <div class="btns">
+        ${canTrack ? `<button onclick="location.href='/track.html?id=${o.id}'">Track</button>` : ''}
+        <button onclick='reorder(${JSON.stringify(o.items.map(i => i.id))})'>Reorder</button>
+        <button onclick="location.href='/order-detail.html?id=${o.id}'">Details</button>
+      </div>
+    </div>`;
+  }).join('')
+  : `<div class="empty"><div class="big">${ic("history",48)}</div><p>No ${tab === 'all' ? '' : tab + ' '}orders.</p><br><a class="btn btn-green" style="max-width:220px;margin:0 auto" href="/">Shop Now</a></div>`;
+}
+async function reorder(ids) {
+  await loadProducts();
+  ids.forEach(id => { if (PRODUCTS.find(p => p.id === id)) cart[id] = (cart[id] || 0) + 1; });
+  saveCart();
+  location.href = '/cart.html';
+}
+init();
+</script>
+</body>
+</html>

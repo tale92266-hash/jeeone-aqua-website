@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Order Placed — JeeOne Aqua</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<script src="/js/icons.js"></script>
+<div class="app-header">
+  <div class="header-row" style="margin-bottom:0">
+    <img class="logo" src="/images/je_logo.png" alt="JE">
+    <span class="name">JeeOne Aqua</span>
+  </div>
+</div>
+<div class="success-wrap">
+  <div class="success-ring">✓</div>
+  <h1>Order Placed!</h1>
+  <p style="color:var(--muted);font-size:14px">Thank you for choosing JeeOne Aqua.<br>Your water is on its way.</p>
+  <div><span class="order-id" id="oid">JEA-000000</span></div>
+  <p style="color:var(--muted);font-size:13px">Pay on delivery</p>
+  <div style="display:flex;gap:10px;margin-top:22px">
+    <a class="btn btn-green" href="/">Continue Shopping</a>
+    <a class="btn btn-gold" href="/download.html"><script>document.write(ic("download",18))</script> Get the App</a>
+  </div>
+</div>
+<script>
+document.getElementById('oid').textContent = new URLSearchParams(location.search).get('id') || 'JEA-000000';
+</script>
+</body>
+</html>

@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>JeeOne Aqua</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<script src="/js/icons.js"></script>
+<div class="dl-banner" id="dlb">
+  <img src="/images/je_logo.png" alt="App">
+  <div class="t"><b>JeeOne Aqua App</b><span>Faster • Live tracking • Offers</span></div>
+  <button class="get" onclick="location.href='/download.html'">GET</button>
+  <button class="x" onclick="document.getElementById('dlb').style.display='none'">✕</button>
+</div>
+
+<!-- ===== App header ===== -->
+<div class="app-header">
+  <div class="header-row">
+    <img class="logo" src="/images/je_logo.png" alt="JE">
+    <span class="name">JeeOne Aqua</span>
+    <div class="header-actions">
+      <a class="icon-btn" href="/download.html" title="Download App"><script>document.write(ic("download",22))</script></a>
+      <a class="icon-btn" href="/cart.html" title="Cart"><script>document.write(ic("cart",22))</script><span class="cart-badge" style="display:none">0</span></a>
+    </div>
+  </div>
+  <div class="search-bar" onclick="switchView('products');document.getElementById('q').focus()"><script>document.write(ic("search",18))</script> &nbsp;Search for water, jars…</div>
+</div>
+
+<!-- ===== HOME view ===== -->
+<div class="view on" id="v-home">
+  <div class="carousel"><div class="carousel-track" id="ctrack"></div><div class="carousel-dots" id="cdots"></div></div>
+
+  <div class="flash-sale">
+    <div class="flash-head"><h3><script>document.write(ic("flash",18))</script> Flash Sale</h3>
+      <div class="countdown">Ends in <b id="cd-h">00</b>:<b id="cd-m">00</b>:<b id="cd-s">00</b></div>
+    </div>
+    <div class="rail" id="flashRail" style="padding:8px 0 0"></div>
+  </div>
+
+  <div class="sec">
+    <div class="sec-head"><h2>Shop by Category</h2></div>
+    <div class="chips" id="catChips"></div>
+  </div>
+
+  <div class="sec">
+    <div class="sec-head"><h2>Bestsellers</h2><a href="#" onclick="switchView('products');return false">View All →</a></div>
+    <div class="rail" id="bestRail"></div>
+  </div>
+
+  <div class="sec" id="buyAgainSec" style="display:none">
+    <div class="sec-head"><h2>Buy Again</h2></div>
+    <div class="rail" id="buyAgainRail"></div>
+  </div>
+
+  <div class="sec" id="recentSec" style="display:none">
+    <div class="sec-head"><h2>Recently Viewed</h2></div>
+    <div class="rail" id="recentRail"></div>
+  </div>
+
+  <div class="sec">
+    <div class="sec-head"><h2>All Products</h2></div>
+    <div class="p-grid" id="homeGrid"></div>
+  </div>
+</div>
+
+<!-- ===== PRODUCTS view ===== -->
+<div class="view" id="v-products">
+  <div style="padding:12px 14px 0"><input id="q" placeholder="Search products…" oninput="renderProducts()"></div>
+  <div class="chips" id="catChips2"></div>
+  <div class="p-grid" id="prodGrid" style="padding-bottom:16px"></div>
+</div>
+
+<!-- ===== PROFILE view ===== -->
+<div class="view" id="v-profile">
+  <div class="profile-head" id="phead">
+    <div class="avatar">J</div>
+    <div style="font-weight:700;font-size:17px">Guest User</div>
+    <div style="font-size:12px;opacity:.75;margin-bottom:10px">Login for orders &amp; rewards</div>
+    <a class="btn btn-gold" style="max-width:200px;margin:0 auto" href="/login.html?back=/">Login / Sign Up</a>
+  </div>
+  <div style="margin-top:10px">
+    <a class="menu-row" href="/orders.html"><span class="mi"><script>document.write(ic("history",22))</script></span> My Orders <span class="arr">›</span></a>
+    <a class="menu-row" href="/cart.html"><span class="mi"><script>document.write(ic("cart",22))</script></span> My Cart <span class="arr">›</span></a>
+    <a class="menu-row" href="/addresses.html"><span class="mi"><script>document.write(ic("location",22))</script></span> My Addresses <span class="arr">›</span></a>
+    <a class="menu-row" href="/wishlist.html"><span class="mi"><script>document.write(ic("favorite",22))</script></span> Wishlist <span class="arr">›</span></a>
+    <a class="menu-row" href="/coupons.html"><span class="mi"><script>document.write(ic("offer",22))</script></span> Coupons <span class="arr">›</span></a>
+    <a class="menu-row" href="/refer.html"><span class="mi"><script>document.write(ic("gift",22))</script></span> Refer &amp; Earn <span class="arr">›</span></a>
+    <a class="menu-row" href="/notifications.html"><span class="mi"><script>document.write(ic("bell",22))</script></span> Notifications <span class="arr">›</span></a>
+    <a class="menu-row" href="/appearance.html"><span class="mi"><script>document.write(ic("palette",22))</script></span> Appearance <span class="arr">›</span></a>
+    <a class="menu-row" href="/edit-profile.html"><span class="mi"><script>document.write(ic("user",22))</script></span> Edit Profile <span class="arr">›</span></a>
+    <a class="menu-row" href="/settings.html"><span class="mi"><script>document.write(ic("settings",22))</script></span> Settings <span class="arr">›</span></a>
+    <a class="menu-row" href="/feedback.html"><span class="mi"><script>document.write(ic("chat",22))</script></span> Feedback <span class="arr">›</span></a>
+    <a class="menu-row" href="/download.html"><span class="mi"><script>document.write(ic("download",22))</script></span> Download App <span class="arr">›</span></a>
+    <a class="menu-row" href="/help.html"><span class="mi"><script>document.write(ic("help",22))</script></span> Help &amp; Support <span class="arr">›</span></a>
+    <a class="menu-row" href="/about.html"><span class="mi"><script>document.write(ic("info",22))</script></span> About JeeOne Aqua <span class="arr">›</span></a>
+  </div>
+</div>
+
+<!-- ===== Bottom nav (like app) ===== -->
+<nav class="bottom-nav">
+  <button class="nav-item active" onclick="switchView('home',this)"><span class="nic"><script>document.write(ic("home",24))</script></span>Home</button>
+  <button class="nav-item" onclick="switchView('products',this)"><span class="nic"><script>document.write(ic("products",24))</script></span>Products</button>
+  <button class="nav-item" onclick="switchView('profile',this)"><span class="nic"><script>document.write(ic("profile",24))</script></span>Profile</button>
+</nav>
+
+<script src="/js/app.js"></script>
+<script>
+const BANNERS = ['images/banner_hero.webp','images/banner_offer.webp','images/banner_quality.webp','images/banner_subscription.webp'];
+let activeCat = 'All', bi = 0;
+
+function switchView(v, el) {
+  document.querySelectorAll('.view').forEach(x => x.classList.remove('on'));
+  document.getElementById('v-' + v).classList.add('on');
+  document.querySelectorAll('.nav-item').forEach(x => x.classList.remove('active'));
+  (el || document.querySelectorAll('.nav-item')[{home:0,products:1,profile:2}[v]]).classList.add('active');
+  window.scrollTo(0, 0);
+}
+
+function initCarousel() {
+  document.getElementById('ctrack').innerHTML = BANNERS.map(b =>
+    `<div class="carousel-slide"><img src="${b}" alt="offer"></div>`).join('');
+  document.getElementById('cdots').innerHTML = BANNERS.map((_, i) =>
+    `<span class="${i === 0 ? 'on' : ''}"></span>`).join('');
+  setInterval(() => {
+    bi = (bi + 1) % BANNERS.length;
+    document.getElementById('ctrack').style.transform = `translateX(-${bi * 100}%)`;
+    document.querySelectorAll('#cdots span').forEach((s, i) => s.classList.toggle('on', i === bi));
+  }, 3500);
+}
+
+function tick() {
+  const end = new Date(); end.setHours(23, 59, 59, 999);
+  let s = Math.max(0, Math.floor((end - Date.now()) / 1000));
+  const h = String(Math.floor(s / 3600)).padStart(2, '0'),
+        m = String(Math.floor(s % 3600 / 60)).padStart(2, '0'),
+        ss = String(s % 60).padStart(2, '0');
+  document.getElementById('cd-h').textContent = h;
+  document.getElementById('cd-m').textContent = m;
+  document.getElementById('cd-s').textContent = ss;
+}
+
+function cardHTML(p) {
+  const q = cart[p.id] || 0;
+  const badge = p.badge ? `<span class="p-badge ${p.badge === 'NEW' ? 'new' : 'best'}">${p.badge === 'NEW' ? 'New' : 'Bestseller'}</span>` : '';
+  const wished = (JSON.parse(localStorage.getItem('jea_wish') || '[]')).includes(p.id);
+  const act = q === 0
+    ? `<button class="p-add" onclick="event.stopPropagation();addToCart('${p.id}');refresh()">Add</button>`
+    : `<div class="p-step"><button onclick="event.stopPropagation();setQty('${p.id}',${q - 1});refresh()">−</button><span>${q}</span><button onclick="event.stopPropagation();setQty('${p.id}',${q + 1});refresh()">+</button></div>`;
+  return `<div class="p-card" onclick="location.href='/product.html?id=${p.id}'">
+    <div class="pimg">${badge}<img src="${p.img}" alt="" loading="lazy">
+      <button class="p-wish" onclick="event.stopPropagation();toggleWish('${p.id}');refresh()">${ic(wished ? 'favorite' : 'favorite_border', 22)}</button>
+    </div>
+    <div class="p-body">
+      <div class="p-name">${p.name}</div>
+      <div class="p-size">${p.size}</div>
+      <div class="p-rating"><span class="star">${ic('star', 14)}</span> ${p.rating} (${p.ratingCount})</div>
+      <div class="p-price"><span class="now">₹${p.price}</span><span class="was">₹${p.mrp}</span><span class="off">${discount(p)}% off</span></div>
+      <div class="p-stock"><span class="dot"></span> In Stock</div>
+      ${act}
+    </div></div>`;
+}
+
+function toggleWish(id) {
+  let w = [];
+  try { w = JSON.parse(localStorage.getItem('jea_wish') || '[]'); } catch(e) {}
+  w = w.includes(id) ? w.filter(x => x !== id) : [...w, id];
+  localStorage.setItem('jea_wish', JSON.stringify(w));
+}
+
+function getRecent() {
+  try { return JSON.parse(localStorage.getItem('jea_recent') || '[]'); } catch(e) { return []; }
+}
+function trackView(id) {
+  let r = getRecent().filter(x => x !== id);
+  r.unshift(id); r = r.slice(0, 10);
+  localStorage.setItem('jea_recent', JSON.stringify(r));
+}
+
+async function refresh() {
+  const best = PRODUCTS.filter(p => p.badge === 'BESTSELLER');
+  document.getElementById('bestRail').innerHTML = best.map(cardHTML).join('');
+  document.getElementById('flashRail').innerHTML = PRODUCTS.slice(0, 5).map(cardHTML).join('');
+  document.getElementById('homeGrid').innerHTML = PRODUCTS.map(cardHTML).join('');
+
+  // Buy Again: from order history
+  try {
+    const r = await fetch('/api/orders');
+    const orders = await r.json();
+    const seen = [];
+    orders.forEach(o => o.items.forEach(i => { if (!seen.includes(i.id)) seen.push(i.id); }));
+    const buyAgain = seen.map(id => PRODUCTS.find(p => p.id === id)).filter(Boolean).slice(0, 8);
+    if (buyAgain.length) {
+      document.getElementById('buyAgainSec').style.display = 'block';
+      document.getElementById('buyAgainRail').innerHTML = buyAgain.map(cardHTML).join('');
+    }
+  } catch(e) {}
+
+  // Recently Viewed
+  const recent = getRecent().map(id => PRODUCTS.find(p => p.id === id)).filter(Boolean).slice(0, 8);
+  if (recent.length) {
+    document.getElementById('recentSec').style.display = 'block';
+    document.getElementById('recentRail').innerHTML = recent.map(cardHTML).join('');
+  }
+
+  renderProducts();
+  document.querySelectorAll('.cart-badge').forEach(el => {
+    const n = cartCount(); el.textContent = n; el.style.display = n ? 'flex' : 'none';
+  });
+}
+
+function renderProducts() {
+  const q = (document.getElementById('q').value || '').toLowerCase();
+  const list = PRODUCTS.filter(p =>
+    (activeCat === 'All' || p.category === activeCat) &&
+    (p.name + ' ' + p.size).toLowerCase().includes(q));
+  document.getElementById('prodGrid').innerHTML = list.length ? list.map(cardHTML).join('')
+    : `<div class="empty"><div class="big">${ic("search",48)}</div><p>No products found.</p></div>`;
+}
+
+function setCat(c, els) {
+  activeCat = c;
+  document.querySelectorAll('#catChips .chip, #catChips2 .chip').forEach(x =>
+    x.classList.toggle('active', x.textContent === c));
+  renderProducts();
+  document.getElementById('homeGrid').innerHTML =
+    PRODUCTS.filter(p => c === 'All' || p.category === c).map(cardHTML).join('');
+}
+
+async function init() {
+  await loadProducts();
+  try {
+    const u = JSON.parse(localStorage.getItem('jea_user') || 'null');
+    if (u) {
+      document.getElementById('phead').innerHTML = `
+        <div class="avatar">${(u.name||'U')[0].toUpperCase()}</div>
+        <div style="font-weight:700;font-size:17px">${u.name}</div>
+        <div style="font-size:12px;opacity:.75;margin-bottom:10px">+91 ${u.phone}</div>
+        <button class="btn btn-gold" style="max-width:200px;margin:0 auto" onclick="localStorage.removeItem('jea_user');location.reload()">Logout</button>`;
+    }
+  } catch(e) {}
+  const cats = ['All', ...new Set(PRODUCTS.map(p => p.category))];
+  const chips = cats.map(c => `<button class="chip ${c === 'All' ? 'active' : ''}" onclick="setCat('${c}')">${c}</button>`).join('');
+  document.getElementById('catChips').innerHTML = chips;
+  document.getElementById('catChips2').innerHTML = chips;
+  initCarousel(); tick(); setInterval(tick, 1000); refresh();
+}
+init();
+</script>
+</body>
+</html>

@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Login — JeeOne Aqua</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<script src="/js/icons.js"></script>
+<div class="app-header">
+  <div class="header-row" style="margin-bottom:0">
+    <a class="icon-btn" href="javascript:history.back()"><script>document.write(ic("back",22))</script></a>
+    <span class="name" style="font-size:16px">Login</span>
+  </div>
+</div>
+<div style="text-align:center;padding:36px 24px 10px">
+  <img src="/images/je_logo.png" style="width:76px;border-radius:50%" alt="JE">
+  <h1 class="serif" style="color:var(--gold);font-size:22px;margin-top:12px">JEEONE AQUA</h1>
+  <p style="color:var(--muted);font-size:13px">Login to track orders & unlock offers</p>
+</div>
+<div class="panel" id="step1">
+  <h2>Enter Mobile Number</h2>
+  <label>Phone</label>
+  <input id="phone" placeholder="10-digit mobile number" maxlength="10" inputmode="numeric">
+  <button class="btn btn-green" onclick="sendOTP()">Send OTP</button>
+  <p style="font-size:12px;color:var(--muted);text-align:center;margin-top:10px">Demo OTP: 123456</p>
+</div>
+<div class="panel" id="step2" style="display:none">
+  <h2>Enter OTP</h2>
+  <p style="font-size:13px;color:var(--muted);margin-bottom:12px">Sent to +91 <span id="ph"></span></p>
+  <label>OTP</label>
+  <input id="otp" placeholder="6-digit OTP" maxlength="6" inputmode="numeric">
+  <button class="btn btn-gold" onclick="verify()">Verify & Login</button>
+  <p style="text-align:center;margin-top:10px"><a href="#" onclick="back1();return false" style="font-size:13px;color:var(--gold)">← Change number</a></p>
+</div>
+<div class="panel" style="text-align:center">
+  <p style="font-size:13px;color:var(--muted)">New here? <a href="#" onclick="sendOTP();return false" style="color:var(--gold);font-weight:700">Create account</a> with your mobile number — it's the same quick OTP step.</p>
+</div>
+<script>
+let myPhone = '';
+function sendOTP() {
+  const p = document.getElementById('phone').value.trim();
+  if (!/^\d{10}$/.test(p)) return alert('Enter a valid 10-digit number');
+  myPhone = p;
+  document.getElementById('ph').textContent = p;
+  document.getElementById('step1').style.display = 'none';
+  document.getElementById('step2').style.display = 'block';
+}
+function back1() {
+  document.getElementById('step1').style.display = 'block';
+  document.getElementById('step2').style.display = 'none';
+}
+function verify() {
+  const o = document.getElementById('otp').value.trim();
+  if (o !== '123456') return alert('Invalid OTP. Demo OTP is 123456');
+  localStorage.setItem('jea_user', JSON.stringify({ phone: myPhone, name: 'User ' + myPhone.slice(-4) }));
+  const back = new URLSearchParams(location.search).get('back') || '/';
+  location.href = back;
+}
+</script>
+</body>
+</html>

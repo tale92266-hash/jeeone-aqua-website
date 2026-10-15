@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Feedback — JeeOne Aqua</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/style.css">
+<style>
+.stars { display:flex; gap:8px; justify-content:center; margin:14px 0; }
+.stars button { background:none; border:none; font-size:34px; cursor:pointer; color:#D5DCD5; padding:4px; }
+.stars button.on { color:var(--gold); }
+</style>
+</head>
+<body>
+<script src="/js/icons.js"></script>
+<div class="app-header">
+  <div class="header-row" style="margin-bottom:0">
+    <a class="icon-btn" href="javascript:history.back()"><script>document.write(ic("back",22))</script></a>
+    <span class="name" style="font-size:16px">Feedback</span>
+  </div>
+</div>
+<div class="panel">
+  <h2>Rate your experience</h2>
+  <div class="stars" id="stars"></div>
+  <label>Your Name</label><input id="fName" placeholder="Your name">
+  <label>Message</label><textarea id="fMsg" rows="4" placeholder="Tell us what you liked or what we can improve…"></textarea>
+  <button class="btn btn-gold" onclick="send()">Submit Feedback</button>
+  <p id="done" style="display:none;text-align:center;color:var(--green);font-weight:700;margin-top:12px">✓ Thank you for your feedback!</p>
+</div>
+<script>
+let rating = 5;
+function drawStars() {
+  document.getElementById('stars').innerHTML = [1,2,3,4,5].map(i =>
+    `<button class="${i <= rating ? 'on' : ''}" onclick="rating=${i};drawStars()">★</button>`).join('');
+}
+async function send() {
+  const name = document.getElementById('fName').value.trim();
+  const msg = document.getElementById('fMsg').value.trim();
+  if (!msg) return alert('Please write your feedback');
+  await fetch('/api/feedback', { method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name, rating, message: msg, at: new Date().toISOString() }) });
+  document.getElementById('done').style.display = 'block';
+  document.getElementById('fMsg').value = '';
+}
+drawStars();
+</script>
+</body>
+</html>

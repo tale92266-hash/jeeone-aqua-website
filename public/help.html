@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Help — JeeOne Aqua</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/style.css">
+<style>
+.faq { background:#fff; margin:0 12px 10px; border-radius:12px; overflow:hidden; }
+.faq .q { padding:15px 16px; font-weight:700; font-size:14px; cursor:pointer; display:flex; justify-content:space-between; }
+.faq .a { padding:0 16px 15px; font-size:13px; color:var(--muted); display:none; }
+.faq.open .a { display:block; }
+</style>
+</head>
+<body>
+<script src="/js/icons.js"></script>
+<div class="app-header">
+  <div class="header-row" style="margin-bottom:0">
+    <a class="icon-btn" href="javascript:history.back()"><script>document.write(ic("back",22))</script></a>
+    <span class="name" style="font-size:16px">Help & Support</span>
+  </div>
+</div>
+<div style="padding-top:12px" id="faqs"></div>
+<div class="panel" style="text-align:center">
+  <h2>Still need help?</h2>
+  <p style="font-size:13px;color:var(--muted);margin-bottom:12px">Call us: +91 98765 43210 (9 AM – 9 PM)</p>
+  <a class="btn btn-green" href="/feedback.html">Send Feedback</a>
+</div>
+<script>
+const FAQS = [
+  ["How do I track my order?", "Open the JeeOne Aqua app and go to My Orders → Track Order for live delivery status."],
+  ["What are the delivery charges?", "Delivery is FREE on orders above ₹199, otherwise ₹20."],
+  ["Can I pause my subscription?", "Yes! In the app, go to Subscriptions → pause, skip or change quantity anytime."],
+  ["Is there a deposit on 20L jars?", "A refundable deposit applies on your first 20L jar order. Refills have no deposit."],
+  ["Which payment methods do you accept?", "Cash on Delivery and UPI. More options coming soon."],
+];
+document.getElementById('faqs').innerHTML = FAQS.map((f, i) => `
+  <div class="faq" id="fq${i}"><div class="q" onclick="document.getElementById('fq${i}').classList.toggle('open')">${f[0]}<span>›</span></div>
+  <div class="a">${f[1]}</div></div>`).join('');
+</script>
+</body>
+</html>

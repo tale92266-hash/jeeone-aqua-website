@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Order Details — JeeOne Aqua</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/style.css">
+<style>
+.od-wrap { padding: 16px; }
+.od-card { background: #fff; border-radius: 16px; box-shadow: 0 1px 4px rgba(28,43,35,.12); padding: 16px; }
+.od-sec { font-size: 15px; font-weight: 800; color: var(--green-dark); margin: 20px 0 8px; }
+.od-head { display: flex; align-items: center; }
+.od-head .oid { font-size: 18px; font-weight: 800; }
+.od-head .odate { font-size: 13px; color: var(--muted); margin-top: 4px; }
+.od-item { display: flex; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--line); }
+.od-item:last-child { border: none; }
+.od-item img { width: 48px; height: 48px; object-fit: contain; margin-right: 12px; }
+.od-item .nm { font-size: 14px; font-weight: 600; }
+.od-item .sz { font-size: 12px; color: var(--muted); margin-top: 2px; }
+.od-item .pr { margin-left: auto; font-size: 14px; font-weight: 700; }
+.od-bill-row { display: flex; margin-top: 8px; }
+.od-bill-row:first-child { margin-top: 0; }
+.od-bill-row .l { flex: 1; font-size: 14px; color: var(--muted); }
+.od-bill-row .v { font-size: 14px; }
+.od-bill-row.disc .l, .od-bill-row.disc .v { color: #2E7D32; }
+.od-bill-row.disc .v { font-weight: 700; }
+.od-div { height: 1px; background: var(--line); margin-top: 12px; }
+.od-total { display: flex; align-items: center; margin-top: 12px; }
+.od-total .l { flex: 1; font-size: 16px; font-weight: 800; }
+.od-total .v { font-size: 20px; font-weight: 800; }
+.od-drow { display: flex; align-items: center; margin-top: 12px; }
+.od-drow:first-child { margin-top: 0; }
+.od-drow .di { width: 28px; height: 28px; color: var(--green); flex-shrink: 0; display: flex; }
+.od-drow .dt { margin-left: 10px; font-size: 14px; }
+.od-drow .dt .sub { font-size: 12px; color: var(--muted); display: block; }
+.od-drow .dt .val { font-weight: 700; }
+/* Timeline */
+.od-tl { position: relative; padding-left: 8px; }
+.od-tl-item { display: flex; }
+.od-tl-left { width: 44px; display: flex; flex-direction: column; align-items: center; flex-shrink: 0; }
+.od-tl-dot { width: 36px; height: 36px; border-radius: 50%; margin-top: 8px; display: flex;
+  align-items: center; justify-content: center; z-index: 1; }
+.od-tl-dot.done { color: #2E7D32; }
+.od-tl-dot.now { background: var(--green); animation: pulse 1.2s infinite; }
+.od-tl-dot.next { color: #D5DCD5; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.35} }
+.od-tl-line { width: 3px; flex: 1; background: var(--line); margin: 4px 0; min-height: 20px; }
+.od-tl-line.done { background: #2E7D32; }
+.od-tl-body { padding: 10px 0 14px; }
+.od-tl-title { font-size: 16px; font-weight: 800; display: flex; align-items: center; gap: 8px; }
+.od-tl-title.done { color: #2E7D32; }
+.od-tl-live { font-size: 10px; font-weight: 800; background: var(--green); color: #fff;
+  padding: 3px 8px; border-radius: 6px; }
+.od-tl-time { font-size: 12px; color: var(--muted); margin-top: 2px; }
+/* Action buttons */
+.od-btn { display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%;
+  padding: 14px; margin-top: 8px; background: #fff; border: 1.5px solid var(--green);
+  border-radius: 10px; font-size: 14px; font-weight: 700; color: var(--green-dark); cursor: pointer; }
+.od-btn .ai { color: var(--green); display: flex; }
+.od-btn.text { border: none; color: #C62828; margin-top: 20px; }
+</style>
+</head>
+<body>
+<script src="/js/icons.js"></script>
+<div class="app-header">
+  <div class="header-row" style="margin-bottom:0">
+    <a class="icon-btn" href="/orders.html"><script>document.write(ic("back",22))</script></a>
+    <span class="name" style="font-size:16px">Order Details</span>
+  </div>
+</div>
+<div class="od-wrap" id="content"></div>
+<div style="height:24px"></div>
+<script src="/js/app.js"></script>
+<script>
+const STEPS = ['Order Placed', 'Packed', 'Shipped', 'Out for Delivery', 'Delivered'];
+const STEP_IX = { 'Confirmed': 1, 'Placed': 0, 'Packed': 1, 'Shipped': 2, 'Out for Delivery': 3, 'Delivered': 4, 'Cancelled': -1 };
+
+async function init() {
+  await loadProducts();
+  const id = new URLSearchParams(location.search).get('id');
+  const r = await fetch('/api/orders');
+  const o = (await r.json()).find(x => x.id === id);
+  if (!o) { document.getElementById('content').innerHTML = '<div class="empty"><p>Order not found.</p></div>'; return; }
+
+  const six = STEP_IX[o.status] ?? 1;
+  const cancelled = o.status === 'Cancelled';
+  const active = !cancelled && o.status !== 'Delivered';
+  const placed = new Date(o.placedAt);
+  const sub = o.items.reduce((s, i) => s + i.price * i.qty, 0);
+  const del = sub >= 199 ? 0 : 20;
+
+  document.getElementById('content').innerHTML = `
+    <div class="od-card">
+      <div class="od-head">
+        <div style="flex:1"><div class="oid">${o.id}</div>
+        <div class="odate">Placed on ${placed.toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'})}</div></div>
+        <span class="pill ${o.status}">${o.status}</span>
+      </div>
+    </div>
+
+    <div class="od-sec">Items</div>
+    <div class="od-card">
+      ${o.items.map(i => {
+        const p = PRODUCTS.find(x => x.id === i.id);
+        return `<div class="od-item">
+          ${p ? `<img src="${p.img}" alt="">` : ''}
+          <div><div class="nm">${i.name}</div><div class="sz">${i.size} • Qty ${i.qty}</div></div>
+          <div class="pr">₹${i.price * i.qty}</div>
+        </div>`;
+      }).join('')}
+    </div>
+
+    <div class="od-sec">Bill Details</div>
+    <div class="od-card">
+      <div class="od-bill-row"><span class="l">Subtotal</span><span class="v">₹${sub}</span></div>
+      ${sub > o.total - del ? `<div class="od-bill-row disc"><span class="l">Discount</span><span class="v">− ₹${sub - (o.total - del)}</span></div>` : ''}
+      <div class="od-bill-row"><span class="l">Delivery</span><span class="v">${del === 0 ? 'FREE' : '₹' + del}</span></div>
+      <div class="od-div"></div>
+      <div class="od-total"><span class="l">To Pay</span><span class="v">₹${o.total}</span></div>
+    </div>
+
+    <div class="od-sec">Delivery Address</div>
+    <div class="od-card">
+      <div class="od-drow">
+        <span class="di">${ic("location",28)}</span>
+        <span class="dt">${o.name} • +91 ${o.phone}<br><span style="color:var(--muted);font-size:13px">${o.address}</span></span>
+      </div>
+      <div class="od-drow">
+        <span class="di">${ic("schedule",28)}</span>
+        <span class="dt"><span class="sub">Delivery Slot</span><span class="val">${o.slot || '—'}</span></span>
+      </div>
+      <div class="od-drow">
+        <span class="di">${ic("wallet",28)}</span>
+        <span class="dt val">${o.payment}</span>
+      </div>
+    </div>
+
+    <div class="od-sec">Timeline</div>
+    <div class="od-tl">
+      ${cancelled ? '<p style="color:var(--muted);font-size:14px">No tracking for cancelled orders.</p>' :
+      STEPS.map((s, i) => {
+        const st = i < six ? 'done' : (i === six ? 'now' : 'next');
+        const tm = i <= six ? placed.toLocaleDateString('en-IN',{day:'numeric',month:'short'}) + ', ' +
+          placed.toLocaleTimeString('en-IN',{hour:'numeric',minute:'2-digit'}) : '';
+        return `<div class="od-tl-item">
+          <div class="od-tl-left">
+            <div class="od-tl-dot ${st}">${st === 'done' ? ic("check",36) : (st === 'now' ? '' : ic("drop",36))}</div>
+            ${i < STEPS.length - 1 ? `<div class="od-tl-line ${i < six ? 'done' : ''}"></div>` : ''}
+          </div>
+          <div class="od-tl-body">
+            <div class="od-tl-title ${st === 'done' ? 'done' : ''}">${s} ${st === 'now' ? '<span class="od-tl-live">LIVE</span>' : ''}</div>
+            ${tm ? `<div class="od-tl-time">${tm}</div>` : ''}
+          </div>
+        </div>`;
+      }).join('')}
+    </div>
+
+    ${active ? `<button class="od-btn text" onclick="if(confirm('Cancel this order?'))alert('Call +91 98765 43210 to cancel')">Cancel Order</button>` : ''}
+    <button class="od-btn" onclick="alert('Our support team will call you back shortly')"><span class="ai">${ic("help",22)}</span> Support</button>
+    <button class="od-btn" onclick="alert('Invoice will be emailed to you')"><span class="ai">${ic("download",22)}</span> Download Invoice</button>
+  `;
+}
+init();
+</script>
+</body>
+</html>

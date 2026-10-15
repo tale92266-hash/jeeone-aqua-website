@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Product — JeeOne Aqua</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/style.css">
+<style>
+.gal { position: relative; background: #fff; }
+.gal img { width: 100%; height: 300px; object-fit: contain; padding: 20px; }
+.gal-dots { position: absolute; bottom: 10px; left: 0; right: 0; display: flex; justify-content: center; gap: 6px; }
+.gal-dots span { width: 7px; height: 7px; border-radius: 4px; background: #D5DCD5; }
+.gal-dots span.on { width: 20px; background: var(--gold); }
+.buy-bar { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 480px;
+  background: #fff; border-top: 1px solid var(--line); padding: 12px 14px calc(12px + env(safe-area-inset-bottom));
+  display: flex; gap: 10px; z-index: 50; }
+.buy-bar .btn { margin: 0; }
+.stars button{background:none;border:none;font-size:30px;cursor:pointer;color:#D5DCD5}
+.stars button.on{color:var(--gold)}
+</style>
+</head>
+<body>
+<script src="/js/icons.js"></script>
+<div class="dl-banner" id="dlb">
+  <img src="/images/je_logo.png" alt="App">
+  <div class="t"><b>JeeOne Aqua App</b><span>Faster • Live tracking • Offers</span></div>
+  <button class="get" onclick="location.href='/download.html'">GET</button>
+  <button class="x" onclick="document.getElementById('dlb').style.display='none'">✕</button>
+</div>
+<div class="app-header">
+  <div class="header-row" style="margin-bottom:0">
+    <a class="icon-btn" href="javascript:history.back()"><script>document.write(ic("back",22))</script></a>
+    <img class="logo" src="/images/je_logo.png" alt="JE">
+    <span class="name">JeeOne Aqua</span>
+    <div class="header-actions">
+      <a class="icon-btn" href="/cart.html"><script>document.write(ic("cart",22))</script><span class="cart-badge" style="display:none">0</span></a>
+    </div>
+  </div>
+</div>
+
+<div class="gal"><img id="pimg" src="" alt="" onclick="openFS()" style="cursor:zoom-in"><div class="gal-dots" id="dots"></div></div>
+<div class="fs-viewer" id="fsv">
+  <button class="fs-x" onclick="closeFS()">✕</button>
+  <img id="fsimg" src="" alt="">
+  <div class="fs-dots" id="fsdots"></div>
+</div>
+
+<div class="panel">
+  <div id="pinfo"></div>
+</div>
+<div class="panel">
+  <h2>Delivery</h2>
+  <div style="display:flex;gap:10px"><input id="pin" placeholder="Enter pincode" maxlength="6" inputmode="numeric" style="margin:0">
+  <button class="btn btn-green" style="width:auto;padding:12px 22px" onclick="checkPin()">Check</button></div>
+  <p id="pinMsg" style="font-size:13px;margin-top:8px"></p>
+</div>
+<div class="panel">
+  <h2>Ratings & Reviews</h2>
+  <div id="revList"></div>
+  <div id="revForm" style="margin-top:14px;border-top:1px solid var(--line);padding-top:14px">
+    <h2 style="font-size:14px">Write a Review</h2>
+    <div class="stars" id="rstars" style="display:flex;gap:6px;margin:10px 0"></div>
+    <input id="rName" placeholder="Your name">
+    <textarea id="rText" rows="3" placeholder="Share your experience…"></textarea>
+    <button class="btn btn-green" onclick="postReview()">Submit Review</button>
+  </div>
+</div>
+<div style="height:90px"></div>
+
+<div class="buy-bar" id="buybar"></div>
+
+<script src="/js/app.js"></script>
+<script>
+let P, gi = 0;
+function gallery() {
+  const imgs = [P.img, P.img, P.img];
+  document.getElementById('pimg').src = imgs[gi];
+  document.getElementById('dots').innerHTML = imgs.map((_, i) =>
+    `<span class="${i === gi ? 'on' : ''}"></span>`).join('');
+}
+function trackView(id) {
+  try {
+    let r = JSON.parse(localStorage.getItem('jea_recent') || '[]').filter(x => x !== id);
+    r.unshift(id); r = r.slice(0, 10);
+    localStorage.setItem('jea_recent', JSON.stringify(r));
+  } catch(e) {}
+}
+async function init() {
+  await loadProducts();
+  const id = new URLSearchParams(location.search).get('id'); trackView(id);
+  P = PRODUCTS.find(x => x.id === id) || PRODUCTS[0];
+  gallery();
+  setInterval(() => { gi = (gi + 1) % 3; gallery(); }, 4000);
+  document.getElementById('pinfo').innerHTML = `
+    <div style="font-size:18px;font-weight:700">${P.name}</div>
+    <span class="p-size" style="margin:8px 0;display:inline-block">${P.size}</span>
+    <div class="p-rating"><span class="star">★</span> ${P.rating} (${P.ratingCount} ratings)</div>
+    <div class="p-price" style="margin:10px 0"><span class="now" style="font-size:24px">₹${P.price}</span>
+      <span class="was">₹${P.mrp}</span><span class="off">${discount(P)}% off</span></div>
+    <p style="font-size:13px;color:var(--muted)">${P.desc}</p>
+    <p style="margin-top:10px;color:var(--green);font-weight:700;font-size:13px">● In stock — ships today</p>`;
+  renderBar();
+  drawRStars();
+  loadReviews();
+}
+function renderBar() {
+  const q = cart[P.id] || 0;
+  document.getElementById('buybar').innerHTML = q === 0
+    ? `<button class="btn btn-green" onclick="addToCart('${P.id}');renderBar();badge()">Add to Cart</button>
+       <button class="btn btn-gold" onclick="addToCart('${P.id}');location.href='/checkout.html'">Buy Now</button>`
+    : `<div class="p-step" style="flex:1;margin:0"><button onclick="setQty('${P.id}',${q - 1});renderBar();badge()">−</button><span>${q}</span><button onclick="setQty('${P.id}',${q + 1});renderBar();badge()">+</button></div>
+       <button class="btn btn-gold" onclick="location.href='/checkout.html'">Buy Now</button>`;
+}
+function badge() {
+  document.querySelectorAll('.cart-badge').forEach(el => {
+    const n = cartCount(); el.textContent = n; el.style.display = n ? 'flex' : 'none';
+  });
+}
+let fsIx = 0;
+function openFS() {
+  fsIx = gi;
+  document.getElementById('fsv').classList.add('on');
+  drawFS();
+}
+function closeFS() { document.getElementById('fsv').classList.remove('on'); }
+function drawFS() {
+  const imgs = [P.img, P.img, P.img];
+  document.getElementById('fsimg').src = imgs[fsIx];
+  document.getElementById('fsdots').innerHTML = imgs.map((_, i) =>
+    `<span class="${i === fsIx ? 'on' : ''}"></span>`).join('');
+}
+// swipe support
+let tx0 = 0;
+document.addEventListener('DOMContentLoaded', () => {
+  const fsv = document.getElementById('fsv');
+  fsv.addEventListener('touchstart', e => tx0 = e.touches[0].clientX, {passive:true});
+  fsv.addEventListener('touchend', e => {
+    const dx = e.changedTouches[0].clientX - tx0;
+    if (Math.abs(dx) > 50) { fsIx = (fsIx + (dx < 0 ? 1 : 2)) % 3; drawFS(); }
+  }, {passive:true});
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeFS(); });
+});
+
+let rRating = 5;
+function drawRStars() {
+  document.getElementById('rstars').innerHTML = [1,2,3,4,5].map(i =>
+    `<button class="${i <= rRating ? 'on' : ''}" onclick="rRating=${i};drawRStars()">★</button>`).join('');
+}
+async function loadReviews() {
+  const r = await fetch('/api/reviews?product=' + P.id);
+  const revs = await r.json();
+  document.getElementById('revList').innerHTML = revs.length ? revs.map(v => `
+    <div class="rev"><div class="rh"><div class="av">${(v.name||'A')[0].toUpperCase()}</div>
+    <div><div class="rn">${v.name||'Anonymous'}</div><div class="rs">${'★'.repeat(v.rating)}${'☆'.repeat(5-v.rating)}</div></div>
+    <div class="rd" style="margin-left:auto">${new Date(v.at).toLocaleDateString('en-IN',{day:'numeric',month:'short'})}</div></div>
+    <div class="rt">${v.text}</div></div>`).join('')
+    : '<p style="color:var(--muted);font-size:13px">No reviews yet. Be the first!</p>';
+}
+async function postReview() {
+  const name = document.getElementById('rName').value.trim() || 'Anonymous';
+  const text = document.getElementById('rText').value.trim();
+  if (!text) return alert('Please write your review');
+  await fetch('/api/review', { method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({ product: P.id, name, rating: rRating, text, at: new Date().toISOString() }) });
+  document.getElementById('rText').value = '';
+  loadReviews();
+}
+function checkPin() {
+  const v = document.getElementById('pin').value.trim();
+  const m = document.getElementById('pinMsg');
+  if (/^\d{6}$/.test(v)) { m.style.color = 'var(--green)'; m.textContent = '✓ Delivery available to ' + v + ' — ships today'; }
+  else { m.style.color = '#C62828'; m.textContent = 'Please enter a valid 6-digit pincode'; }
+}
+init(); badge();
+</script>
+</body>
+</html>

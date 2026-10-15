@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Settings — JeeOne Aqua</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/style.css">
+<style>
+.set-sec { font-size: 13px; font-weight: 700; color: var(--muted); text-transform: uppercase;
+  letter-spacing: .05em; margin: 20px 16px 8px; }
+.set-card { background: #fff; margin: 0 12px; border-radius: 14px; overflow: hidden;
+  box-shadow: 0 1px 4px rgba(28,43,35,.08); }
+.set-row { display: flex; align-items: center; gap: 12px; padding: 15px 16px;
+  border-bottom: 1px solid var(--line); cursor: pointer; }
+.set-row:last-child { border: none; }
+.set-row .si { width: 24px; height: 24px; color: var(--green); flex-shrink: 0; display: flex; }
+.set-row .st { flex: 1; }
+.set-row .st b { font-size: 14px; font-weight: 600; display: block; }
+.set-row .st span { font-size: 12px; color: var(--muted); margin-top: 2px; display: block; }
+.set-row.danger .st b { color: #C62828; }
+.set-row.danger .si { color: #C62828; }
+/* Toggle switch */
+.tgl { width: 48px; height: 28px; border-radius: 14px; background: #D5DCD5; position: relative;
+  cursor: pointer; transition: background .2s; flex-shrink: 0; border: none; }
+.tgl.on { background: var(--green); }
+.tgl::after { content: ''; position: absolute; top: 2px; left: 2px; width: 24px; height: 24px;
+  border-radius: 50%; background: #fff; transition: left .2s; box-shadow: 0 1px 3px rgba(0,0,0,.2); }
+.tgl.on::after { left: 22px; }
+/* Dialog */
+.dlg-bg { position: fixed; inset: 0; background: rgba(0,0,0,.5); z-index: 100;
+  display: none; align-items: center; justify-content: center; padding: 24px; }
+.dlg-bg.show { display: flex; }
+.dlg { background: #fff; border-radius: 16px; padding: 20px; width: 100%; max-width: 340px;
+  animation: pop .2s; }
+.dlg h3 { font-size: 17px; font-weight: 800; margin-bottom: 12px; }
+.dlg p { font-size: 14px; color: var(--muted); line-height: 1.6; margin-bottom: 16px; }
+.dlg .dbtns { display: flex; gap: 10px; justify-content: flex-end; }
+.dlg .dbtns button { padding: 10px 18px; border-radius: 8px; font-size: 14px; font-weight: 700; cursor: pointer; }
+.dlg .cancel { background: #f0f0f0; border: none; }
+.dlg .ok { background: var(--green); color: #fff; border: none; }
+.dlg .del { background: #C62828; color: #fff; border: none; }
+.dlg .lang-opt { display: flex; align-items: center; gap: 10px; padding: 12px; border-radius: 8px; cursor: pointer; }
+.dlg .lang-opt:hover { background: var(--ivory); }
+.dlg .lang-opt.sel { background: var(--green-tint); }
+@keyframes pop { from { transform: scale(.95); opacity: 0; } }
+</style>
+</head>
+<body>
+<script src="/js/icons.js"></script>
+<div class="app-header">
+  <div class="header-row" style="margin-bottom:0">
+    <a class="icon-btn" href="javascript:history.back()"><script>document.write(ic("back",22))</script></a>
+    <span class="name" style="font-size:16px">Settings</span>
+  </div>
+</div>
+
+<div class="set-sec">Notifications</div>
+<div class="set-card">
+  <div class="set-row">
+    <span class="si"><script>document.write(ic("offer",22))</script></span>
+    <div class="st"><b>Offers & promotions</b><span>Get notified about new offers and discounts</span></div>
+    <button class="tgl on" id="tglOffers" onclick="toggleNotif('offers', this)"></button>
+  </div>
+  <div class="set-row">
+    <span class="si"><script>document.write(ic("bell",22))</script></span>
+    <div class="st"><b>Order updates</b><span>Get notified about your order status</span></div>
+    <button class="tgl on" id="tglOrders" onclick="toggleNotif('orders', this)"></button>
+  </div>
+</div>
+
+<div class="set-sec">General</div>
+<div class="set-card">
+  <div class="set-row" onclick="showLang()">
+    <span class="si"><script>document.write(ic("globe",22))</script></span>
+    <div class="st"><b>Language</b><span id="langSub">English</span></div>
+  </div>
+  <div class="set-row" onclick="clearCache()">
+    <span class="si"><script>document.write(ic("delete",22))</script></span>
+    <div class="st"><b>Clear cache</b><span>Free up temporary app storage</span></div>
+  </div>
+  <div class="set-row" onclick="showPolicy('Privacy Policy', 'JeeOne Aqua respects your privacy. We collect only the information needed to deliver your orders — your name, phone, address and order history. We never sell your data to third parties.')">
+    <span class="si"><script>document.write(ic("shield",22))</script></span>
+    <div class="st"><b>Privacy Policy</b></div>
+  </div>
+  <div class="set-row" onclick="showPolicy('Terms of Service', 'By using JeeOne Aqua you agree to our service terms. Orders are confirmed on placement and delivered in the selected slot. Cancellations are allowed before dispatch. Refunds for failed payments are processed within 5–7 business days.')">
+    <span class="si"><script>document.write(ic("info",22))</script></span>
+    <div class="st"><b>Terms of Service</b></div>
+  </div>
+</div>
+
+<div class="set-card" style="margin-top:16px">
+  <div class="set-row danger" onclick="confirmDelete1()">
+    <span class="si"><script>document.write(ic("delete",22))</script></span>
+    <div class="st"><b>Delete Account</b><span>Permanently delete your account and data</span></div>
+  </div>
+</div>
+<div style="height:24px"></div>
+
+<!-- Dialog -->
+<div class="dlg-bg" id="dlgBg" onclick="if(event.target===this)closeDlg()">
+  <div class="dlg" id="dlgBox"></div>
+</div>
+
+<script>
+function getPref(k, d) {
+  try { const v = localStorage.getItem('jea_' + k); return v === null ? d : v === '1'; }
+  catch(e) { return d; }
+}
+function setPref(k, v) { localStorage.setItem('jea_' + k, v ? '1' : '0'); }
+
+function toggleNotif(k, el) {
+  const on = !el.classList.contains('on');
+  el.classList.toggle('on', on);
+  setPref('notif_' + k, on);
+}
+
+// Init toggles
+document.getElementById('tglOffers').classList.toggle('on', getPref('notif_offers', true));
+document.getElementById('tglOrders').classList.toggle('on', getPref('notif_orders', true));
+
+function openDlg(html) {
+  document.getElementById('dlgBox').innerHTML = html;
+  document.getElementById('dlgBg').classList.add('show');
+}
+function closeDlg() { document.getElementById('dlgBg').classList.remove('show'); }
+
+function showLang() {
+  const cur = localStorage.getItem('jea_lang') || 'en';
+  openDlg(`<h3>Language</h3>
+    <div class="lang-opt ${cur === 'en' ? 'sel' : ''}" onclick="setLang('en')">English</div>
+    <div class="lang-opt ${cur === 'hi' ? 'sel' : ''}" onclick="setLang('hi')">हिन्दी</div>
+    <div class="dbtns" style="margin-top:12px"><button class="cancel" onclick="closeDlg()">Cancel</button></div>`);
+}
+function setLang(l) {
+  if (l === 'hi') { alert('Hindi coming soon!'); return; }
+  localStorage.setItem('jea_lang', 'en');
+  document.getElementById('langSub').textContent = 'English';
+  closeDlg();
+}
+
+function clearCache() {
+  localStorage.removeItem('jea_notifs');
+  alert('Cache cleared');
+}
+
+function showPolicy(title, text) {
+  openDlg(`<h3>${title}</h3><p>${text}</p>
+    <div class="dbtns"><button class="ok" onclick="closeDlg()">OK</button></div>`);
+}
+
+function confirmDelete1() {
+  openDlg(`<h3>Delete account?</h3>
+    <p>This will remove your profile, addresses, orders and wishlist from this device. This cannot be undone.</p>
+    <div class="dbtns"><button class="cancel" onclick="closeDlg()">Cancel</button>
+    <button class="del" onclick="confirmDelete2()">Yes</button></div>`);
+}
+function confirmDelete2() {
+  openDlg(`<h3>Are you absolutely sure?</h3>
+    <p>Tap Delete again to confirm permanent deletion.</p>
+    <div class="dbtns"><button class="cancel" onclick="closeDlg()">Cancel</button>
+    <button class="del" onclick="doDelete()">Delete</button></div>`);
+}
+function doDelete() {
+  ['jea_user','jea_cart','jea_addrs','jea_wish','jea_recent','jea_notifs'].forEach(k => localStorage.removeItem(k));
+  location.href = '/login.html';
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Wishlist — JeeOne Aqua</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<script src="/js/icons.js"></script>
+<div class="app-header">
+  <div class="header-row" style="margin-bottom:0">
+    <a class="icon-btn" href="javascript:history.back()"><script>document.write(ic("back",22))</script></a>
+    <span class="name" style="font-size:16px">Wishlist</span>
+  </div>
+</div>
+<div class="p-grid" id="grid" style="padding-top:12px"></div>
+<script src="/js/app.js"></script>
+<script>
+let wish = [];
+try { wish = JSON.parse(localStorage.getItem('jea_wish') || '[]'); } catch(e) {}
+async function render() {
+  await loadProducts();
+  const list = PRODUCTS.filter(p => wish.includes(p.id));
+  document.getElementById('grid').innerHTML = list.length ? list.map(p => `
+    <div class="p-card" onclick="location.href='/product.html?id=${p.id}'">
+      <div class="pimg"><img src="${p.img}" alt="" loading="lazy"></div>
+      <div class="p-body">
+        <div class="p-name">${p.name}</div>
+        <span class="p-size">${p.size}</span>
+        <div class="p-price"><span class="now">₹${p.price}</span><span class="was">₹${p.mrp}</span></div>
+        <button class="p-add" onclick="event.stopPropagation();addToCart('${p.id}');alert('Added to cart')">Add</button>
+      </div>
+    </div>`).join('')
+    : `<div class="empty" style="grid-column:1/-1"><div class="big">${ic("favorite",48)}</div><p>Your wishlist is empty.</p></div>`;
+}
+function toggleWish(id) {
+  wish = wish.includes(id) ? wish.filter(x => x !== id) : [...wish, id];
+  localStorage.setItem('jea_wish', JSON.stringify(wish));
+}
+render();
+</script>
+</body>
+</html>

@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Notifications — JeeOne Aqua</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/style.css">
+<style>
+.mark-all { display: flex; justify-content: flex-end; padding: 4px 16px; }
+.mark-all button { background: none; border: none; color: var(--green); font-size: 14px;
+  font-weight: 700; cursor: pointer; padding: 8px; }
+.nlist { padding: 4px 16px 16px; }
+.ncard { background: #fff; border-radius: 12px; box-shadow: 0 1px 4px rgba(28,43,35,.12);
+  margin-bottom: 12px; display: flex; align-items: center; gap: 12px; padding: 14px; cursor: pointer; }
+.ncard .nic { width: 40px; height: 40px; border-radius: 8px; background: var(--green-tint);
+  color: var(--green); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.ncard .nt { flex: 1; }
+.ncard .nt b { font-size: 15px; font-weight: 700; display: block; }
+.ncard .nt p { font-size: 13px; color: var(--muted); margin-top: 2px; }
+.ncard .ntime { font-size: 12px; color: var(--muted); margin-top: 4px; display: block; }
+.ndot { width: 10px; height: 10px; border-radius: 50%; background: #C62828; margin-left: 8px; flex-shrink: 0; }
+</style>
+</head>
+<body>
+<script src="/js/icons.js"></script>
+<div class="app-header">
+  <div class="header-row" style="margin-bottom:0">
+    <a class="icon-btn" href="javascript:history.back()"><script>document.write(ic("back",22))</script></a>
+    <span class="name" style="font-size:16px">Notifications</span>
+  </div>
+</div>
+<div class="mark-all"><button onclick="markAll()">Mark all as read</button></div>
+<div class="nlist" id="list"></div>
+<script>
+function getNotifs() {
+  try { return JSON.parse(localStorage.getItem('jea_notifs') || '[]'); }
+  catch(e) { return []; }
+}
+function saveNotifs(n) { localStorage.setItem('jea_notifs', JSON.stringify(n)); }
+
+if (!localStorage.getItem('jea_notifs')) {
+  saveNotifs([{
+    id: 1, type: 'offer', title: 'Welcome to JeeOne Aqua!',
+    text: 'Get pure, BIS-certified water delivered to your doorstep.',
+    time: Date.now(), read: false
+  }]);
+}
+
+function render() {
+  const notifs = getNotifs();
+  document.getElementById('list').innerHTML = notifs.length ? notifs.map(n => `
+    <div class="ncard" onclick="readNotif(${n.id})">
+      <div class="nic">${ic(n.type === 'order' ? 'history' : (n.type === 'offer' ? 'offer' : 'bell'), 24)}</div>
+      <div class="nt">
+        <b>${n.title}</b><p>${n.text}</p>
+        <span class="ntime">${new Date(n.time).toLocaleDateString('en-IN',{day:'numeric',month:'short'})}</span>
+      </div>
+      ${n.read ? '' : '<div class="ndot"></div>'}
+    </div>`).join('')
+    : `<div class="empty"><div class="big">${ic("bell",48)}</div><p>No notifications yet.</p></div>`;
+}
+function readNotif(id) {
+  const n = getNotifs();
+  const x = n.find(i => i.id === id);
+  if (x) { x.read = true; saveNotifs(n); render(); }
+}
+function markAll() {
+  const n = getNotifs();
+  n.forEach(i => i.read = true);
+  saveNotifs(n); render();
+}
+render();
+</script>
+</body>
+</html>

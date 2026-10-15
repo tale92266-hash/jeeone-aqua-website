@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Edit Profile — JeeOne Aqua</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/style.css">
+<style>
+.avatar-big { width:88px; height:88px; border-radius:50%; background:var(--green); color:#fff;
+  font-size:36px; font-weight:800; display:flex; align-items:center; justify-content:center; margin:20px auto 8px; }
+</style>
+</head>
+<body>
+<script src="/js/icons.js"></script>
+<div class="app-header">
+  <div class="header-row" style="margin-bottom:0">
+    <a class="icon-btn" href="javascript:history.back()"><script>document.write(ic("back",22))</script></a>
+    <span class="name" style="font-size:16px">Edit Profile</span>
+  </div>
+</div>
+<div style="padding:0 12px">
+  <div class="avatar-big" id="avatar">J</div>
+  <div class="panel">
+    <label>Full Name</label>
+    <input id="eName" placeholder="Your name">
+    <label>Phone Number</label>
+    <input id="ePhone" placeholder="10-digit mobile" maxlength="10" inputmode="numeric">
+    <label>Email (optional)</label>
+    <input id="eEmail" placeholder="you@example.com" type="email">
+    <button class="btn btn-green" onclick="saveProfile()">Save Changes</button>
+  </div>
+</div>
+<script>
+function load() {
+  try {
+    const u = JSON.parse(localStorage.getItem('jea_user') || '{}');
+    document.getElementById('eName').value = u.name || '';
+    document.getElementById('ePhone').value = u.phone || '';
+    document.getElementById('eEmail').value = u.email || '';
+    document.getElementById('avatar').textContent = (u.name || 'J').trim()[0]?.toUpperCase() || 'J';
+  } catch(e) {}
+}
+function saveProfile() {
+  const name = document.getElementById('eName').value.trim();
+  const phone = document.getElementById('ePhone').value.trim();
+  const email = document.getElementById('eEmail').value.trim();
+  if (!name) return alert('Enter your name');
+  if (phone && !/^\d{10}$/.test(phone)) return alert('Enter valid 10-digit phone');
+  const u = { name, phone, email };
+  localStorage.setItem('jea_user', JSON.stringify(u));
+  alert('Profile saved!');
+  history.back();
+}
+load();
+</script>
+</body>
+</html>
