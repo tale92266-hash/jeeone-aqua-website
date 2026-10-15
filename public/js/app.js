@@ -5,9 +5,59 @@ try { cart = JSON.parse(localStorage.getItem('jea_cart') || '{}'); } catch (e) {
 
 async function loadProducts() {
   if (PRODUCTS.length) return PRODUCTS;
-  const r = await fetch('/api/products');
-  PRODUCTS = await r.json();
+  try {
+    const r = await fetch('/api/products');
+    if (r.ok) { PRODUCTS = await r.json(); return PRODUCTS; }
+  } catch(e) {}
+  // Static fallback for Vercel/hosted version
+  const r2 = await fetch('/data/products.json');
+  PRODUCTS = await r2.json();
   return PRODUCTS;
+}
+
+// Static-mode API helpers (localStorage when server API unavailable)
+async function apiGet(path) {
+  try {
+    const r = await fetch(path);
+    if (r.ok) return await r.json();
+  } catch(e) {}
+  // Fallbacks
+  if (path === '/api/orders') {
+    try { return JSON.parse(localStorage.getItem('jea_orders') || '[]'); } catch(e) { return []; }
+  }
+  if (path.startsWith('/api/reviews')) {
+    try { return JSON.parse(localStorage.getItem('jea_reviews') || '[]'); } catch(e) { return []; }
+  }
+  if (path === '/api/coupons') {
+    return [
+      { code: 'WELCOME20', title: '20% off first order', desc: 'New customers • Min order ₹149' },
+      { code: 'JAR10', title: '₹10 off 20L jar', desc: 'On every 20L jar refill' },
+      { code: 'FAMILY15', title: '15% off Family Combo', desc: 'On Family Combo pack' }
+    ];
+  }
+  return null;
+}
+async function apiPost(path, data) {
+  try {
+    const r = await fetch(path, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
+    if (r.ok) return await r.json();
+  } catch(e) {}
+  // Static fallbacks
+  if (path === '/api/order') {
+    const orders = JSON.parse(localStorage.getItem('jea_orders') || '[]');
+    const id = 'JEA-' + Math.floor(100000 + Math.random() * 900000);
+    orders.unshift({ id, ...data, placedAt: new Date().toISOString(), status: 'Confirmed' });
+    localStorage.setItem('jea_orders', JSON.stringify(orders));
+    return { ok: true, orderId: id };
+  }
+  if (path === '/api/review') {
+    const revs = JSON.parse(localStorage.getItem('jea_reviews') || '[]');
+    revs.push({ ...data, id: Date.now(), date: new Date().toISOString() });
+    localStorage.setItem('jea_reviews', JSON.stringify(revs));
+    return { ok: true };
+  }
+  if (path === '/api/feedback') return { ok: true };
+  return { ok: false };
 }
 function saveCart() {
   localStorage.setItem('jea_cart', JSON.stringify(cart));

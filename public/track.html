@@ -70,8 +70,7 @@ const STEP_IX = { 'Confirmed': 1, 'Placed': 0, 'Packed': 1, 'Shipped': 2, 'Out f
 
 async function init() {
   const id = new URLSearchParams(location.search).get('id');
-  const r = await fetch('/api/orders');
-  const o = (await r.json()).find(x => x.id === id);
+  const o = (await apiGet('/api/orders')).find(x => x.id === id);
   if (!o) { document.getElementById('content').innerHTML = '<div class="empty"><p>Order not found.</p></div>'; return; }
 
   const six = STEP_IX[o.status] ?? 1;

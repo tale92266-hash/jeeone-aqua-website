@@ -25,8 +25,8 @@
 <div id="list"></div>
 <script>
 async function init() {
-  const r = await fetch('/api/coupons');
-  const coupons = await r.json();
+  const coupons = await apiGet('/api/coupons'); //
+
   document.getElementById('list').innerHTML = coupons.map(c => `
     <div class="coupon">
       <div><div class="code">${c.code}</div></div>

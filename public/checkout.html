@@ -269,12 +269,9 @@ async function placeOrder() {
   const btn = document.getElementById('btnNext');
   btn.textContent = 'Placing…'; btn.disabled = true;
   try {
-    const r = await fetch('/api/order', { method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ items, total: sub + del, name: a.name, phone: a.phone,
+    const d = await apiPost('/api/order', { items, total: sub + del, name: a.name, phone: a.phone,
         address: `${a.tag}: ${a.addr}`, slot: dayLabel(dayOff) + ', ' + SLOTS[slotIx],
-        payment: payNames[payMethod] + (payMethod === 'upi' ? ' (' + upiId + ')' : '') }) });
-    const d = await r.json();
+        payment: payNames[payMethod] + (payMethod === 'upi' ? ' (' + upiId + ')' : '') });
     if (d.ok) {
       cart = {}; saveCart();
       try {

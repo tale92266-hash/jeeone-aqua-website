@@ -187,8 +187,7 @@ async function refresh() {
 
   // Buy Again: from order history
   try {
-    const r = await fetch('/api/orders');
-    const orders = await r.json();
+    const orders = await apiGet('/api/orders');
     const seen = [];
     orders.forEach(o => o.items.forEach(i => { if (!seen.includes(i.id)) seen.push(i.id); }));
     const buyAgain = seen.map(id => PRODUCTS.find(p => p.id === id)).filter(Boolean).slice(0, 8);

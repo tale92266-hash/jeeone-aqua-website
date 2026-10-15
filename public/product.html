@@ -148,8 +148,7 @@ function drawRStars() {
     `<button class="${i <= rRating ? 'on' : ''}" onclick="rRating=${i};drawRStars()">★</button>`).join('');
 }
 async function loadReviews() {
-  const r = await fetch('/api/reviews?product=' + P.id);
-  const revs = await r.json();
+  const revs = (await apiGet('/api/reviews?product=' + P.id)) || [];
   document.getElementById('revList').innerHTML = revs.length ? revs.map(v => `
     <div class="rev"><div class="rh"><div class="av">${(v.name||'A')[0].toUpperCase()}</div>
     <div><div class="rn">${v.name||'Anonymous'}</div><div class="rs">${'★'.repeat(v.rating)}${'☆'.repeat(5-v.rating)}</div></div>
@@ -161,8 +160,7 @@ async function postReview() {
   const name = document.getElementById('rName').value.trim() || 'Anonymous';
   const text = document.getElementById('rText').value.trim();
   if (!text) return alert('Please write your review');
-  await fetch('/api/review', { method:'POST', headers:{'Content-Type':'application/json'},
-    body: JSON.stringify({ product: P.id, name, rating: rRating, text, at: new Date().toISOString() }) });
+  await apiPost('/api/review', { product: P.id, name, rating: rRating, text, at: new Date().toISOString() });
   document.getElementById('rText').value = '';
   loadReviews();
 }

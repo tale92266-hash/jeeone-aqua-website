@@ -38,8 +38,7 @@ async function send() {
   const name = document.getElementById('fName').value.trim();
   const msg = document.getElementById('fMsg').value.trim();
   if (!msg) return alert('Please write your feedback');
-  await fetch('/api/feedback', { method: 'POST', headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ name, rating, message: msg, at: new Date().toISOString() }) });
+  await apiPost('/api/feedback', { name, rating, message: msg, at: new Date().toISOString() });
   document.getElementById('done').style.display = 'block';
   document.getElementById('fMsg').value = '';
 }
