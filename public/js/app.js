@@ -1,4 +1,6 @@
 // Shared: products, cart (localStorage), header cart count
+// Backend API base — set to your backend URL when available, else uses static fallbacks
+const API_BASE = (typeof JEA_API_BASE !== 'undefined' && JEA_API_BASE) || '';
 let PRODUCTS = [];
 let cart = {};
 try { cart = JSON.parse(localStorage.getItem('jea_cart') || '{}'); } catch (e) { cart = {}; }
@@ -6,7 +8,7 @@ try { cart = JSON.parse(localStorage.getItem('jea_cart') || '{}'); } catch (e) {
 async function loadProducts() {
   if (PRODUCTS.length) return PRODUCTS;
   try {
-    const r = await fetch('/api/products');
+    const r = await fetch(API_BASE + '/api/products');
     if (r.ok) { PRODUCTS = await r.json(); return PRODUCTS; }
   } catch(e) {}
   // Static fallback for Vercel/hosted version
@@ -18,7 +20,7 @@ async function loadProducts() {
 // Static-mode API helpers (localStorage when server API unavailable)
 async function apiGet(path) {
   try {
-    const r = await fetch(path);
+    const r = await fetch(API_BASE + path);
     if (r.ok) return await r.json();
   } catch(e) {}
   // Fallbacks
@@ -39,7 +41,7 @@ async function apiGet(path) {
 }
 async function apiPost(path, data) {
   try {
-    const r = await fetch(path, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
+    const r = await fetch(API_BASE + path, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
     if (r.ok) return await r.json();
   } catch(e) {}
   // Static fallbacks
